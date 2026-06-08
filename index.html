@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>小三數學大對戰 - 升級打怪學比較</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+    <div class="top-bar">
+        <button class="btn nav-btn" id="btn-home" onclick="goHome()">返回主目錄</button>
+        <div class="timer-display" id="timer" style="display:none;">02:00</div>
+        <button class="btn nav-btn" id="btn-fullscreen" onclick="toggleFullscreen()">全屏顯示</button>
+    </div>
+
+    <!-- 開始畫面 -->
+    <div id="screen-start" class="screen active">
+        <div class="title-text">小三數學大對戰<br>分數・重量・容量・長度比較</div>
+        <button class="btn" onclick="showScreen('screen-rules')">開始遊玩</button>
+    </div>
+
+    <!-- 說明畫面 -->
+    <div id="screen-rules" class="screen">
+        <div class="title-text" style="font-size:40px;">遊戲說明</div>
+        <div class="rule-box">
+            1. <b>左右對戰：</b> 左邊為玩家1（騎士 ⚔️），右邊為玩家2（法師 🔮）。<br>
+            2. <b>操作步驟：</b> 點擊 <span style="color:#f1c40f">&gt;</span>、<span style="color:#f1c40f">&lt;</span> 或 <span style="color:#f1c40f">=</span> 按鈕 ➡️ 答案顯示在空格 ➡️ 按<b>「確定」</b>送出答案。若想更改可按<b>「取消」</b>。<br>
+            3. <b>戰鬥機制：</b> 答對能攻擊怪獸（扣怪獸HP）；答錯自己會被怪獸攻擊（扣玩家HP）。<br>
+            4. <b>升級系統：</b> 累積答對 5 題可以解鎖進階職業頭銜！連續答對還能獲得 Combo 加成！<br>
+            5. <b>勝負條件：</b> 限時 2 分鐘（120秒），時間到時擊敗最多隻怪獸的玩家獲勝！
+        </div>
+        <button class="btn" onclick="startGame()">進入戰鬥！</button>
+    </div>
+
+    <!-- 遊戲畫面 -->
+    <div id="screen-game" class="screen">
+        <div class="game-container">
+            
+            <div id="p1-side" class="player-side">
+                <div class="status-bar">
+                    <div>玩家1：<span id="p1-job" style="color:#54a0ff; font-weight:bold;">見習騎士</span></div>
+                    <div>HP: <div class="hp-bar-container"><div id="p1-hp" class="hp-bar"></div></div></div>
+                    <div>得分: <span id="p1-score">0</span></div>
+                </div>
+                
+                <div class="stage" id="p1-stage">
+                    <div class="combo-badge" id="p1-combo">0 Combo</div>
+                    <div class="avatar">⚔️</div>
+                    <div style="text-align: center;">
+                        <div id="p1-m-name" style="font-size:14px; margin-bottom:2px;">史萊姆</div>
+                        <div class="hp-bar-container" style="width:80px; height:10px;"><div id="p1-m-hp" class="hp-bar monster-hp-bar"></div></div>
+                        <div style="font-size:12px;">已擊敗: <span id="p1-kills">0</span> 隻</div>
+                    </div>
+                    <div class="avatar" id="p1-monster-pic">👾</div>
+                </div>
+
+                <div class="quiz-container">
+                    <div class="quiz-text" id="p1-quiz">1/2 <span class="slot" id="p1-slot">_</span> 1/4</div>
+                </div>
+
+                <div class="keypad">
+                    <button class="op-btn" onclick="inputOp(1, '>')">&gt;</button>
+                    <button class="op-btn" onclick="inputOp(1, '<')">&lt;</button>
+                    <button class="op-btn" onclick="inputOp(1, '=')">=</button>
+                    <button class="ctrl-btn btn-clear" onclick="clearOp(1)">取消</button>
+                    <button class="ctrl-btn btn-confirm" onclick="checkAnswer(1)">確定</button>
+                </div>
+            </div>
+
+            <div id="p2-side" class="player-side">
+                <div class="status-bar">
+                    <div>玩家2：<span id="p2-job" style="color:#a855f7; font-weight:bold;">見習法師</span></div>
+                    <div>HP: <div class="hp-bar-container"><div id="p2-hp" class="hp-bar"></div></div></div>
+                    <div>得分: <span id="p2-score">0</span></div>
+                </div>
+                
+                <div class="stage" id="p2-stage">
+                    <div class="combo-badge" id="p2-combo">0 Combo</div>
+                    <div class="avatar">🔮</div>
+                    <div style="text-align: center;">
+                        <div id="p2-m-name" style="font-size:14px; margin-bottom:2px;">小蝙蝠</div>
+                        <div class="hp-bar-container" style="width:80px; height:10px;"><div id="p2-m-hp" class="hp-bar monster-hp-bar"></div></div>
+                        <div style="font-size:12px;">已擊敗: <span id="p2-kills">0</span> 隻</div>
+                    </div>
+                    <div class="avatar" id="p2-monster-pic">🦇</div>
+                </div>
+
+                <div class="quiz-container">
+                    <div class="quiz-text" id="p2-quiz">500 g <span class="slot" id="p2-slot">_</span> 1 kg</div>
+                </div>
+
+                <div class="keypad">
+                    <button class="op-btn" onclick="inputOp(2, '>')">&gt;</button>
+                    <button class="op-btn" onclick="inputOp(2, '<')">&lt;</button>
+                    <button class="op-btn" onclick="inputOp(2, '=')">=</button>
+                    <button class="ctrl-btn btn-clear" onclick="clearOp(2)">取消</button>
+                    <button class="ctrl-btn btn-confirm" onclick="checkAnswer(2)">確定</button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- 結算畫面 -->
+    <div id="screen-result" class="screen">
+        <div class="title-text" id="game-over-title">戰鬥結束！</div>
+        
+        <div class="result-board">
+            <div class="result-card" id="p1-card" style="border-color: var(--accent-p1);">
+                <h2>玩家1 (騎士)</h2>
+                <p style="font-size:24px;">擊敗怪獸: <span id="p1-res-kills" style="color:#f1c40f; font-weight:bold;">0</span> 隻</p>
+                <p>最終稱號: <span id="p1-res-job">--</span></p>
+                <p>總得分: <span id="p1-res-score">0</span></p>
+            </div>
+            <div class="result-card" id="p2-card" style="border-color: var(--accent-p2);">
+                <h2>玩家2 (法師)</h2>
+                <p style="font-size:24px;">擊敗怪獸: <span id="p2-res-kills" style="color:#f1c40f; font-weight:bold;">0</span> 隻</p>
+                <p>最終稱號: <span id="p2-res-job">--</span></p>
+                <p>總得分: <span id="p2-res-score">0</span></p>
+            </div>
+        </div>
+
+        <h1 id="winner-text" style="color:#f1c40f; text-shadow: 0 0 10px rgba(241,196,15,0.5); margin-bottom:30px;"></h1>
+        
+        <div>
+            <button class="btn" onclick="startGame()">再玩一次</button>
+            <button class="btn" style="background:#7f8c8d; box-shadow:0 6px #596275;" onclick="goHome()">返回主頁</button>
+        </div>
+    </div>
+
+    <script src="game.js"></script>
+</body>
+</html>
