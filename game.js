@@ -1,5 +1,5 @@
 // ============================================
-// 小三數學大對戰 - 遊戲邏輯核心
+// 小三數學大對戰 - 遊戲邏輯核心 (150題版)
 // ============================================
 
 // ============ 遊戲常數 ============
@@ -13,24 +13,117 @@ const GAME_CONFIG = {
     COMBO_THRESHOLD: 3 // Combo 顯示門檻
 };
 
-// ============ 題目資料庫 (50題) ============
-const ITEM_POOL = [
+// ============ 乘加/乘減混合計算題 (100題) ============
+const CALCULATION_POOL = generateCalculationQuestions();
+
+function generateCalculationQuestions() {
+    const questions = [];
+    
+    // 生成100道乘加/乘減混合計算題
+    for (let i = 0; i < 100; i++) {
+        const a = Math.floor(Math.random() * 9) + 2; // 2-10
+        const b = Math.floor(Math.random() * 9) + 2; // 2-10
+        const c = Math.floor(Math.random() * 20) + 1; // 1-20
+        const isAddition = Math.random() > 0.5;
+        const correctAnswer = isAddition ? (a * b + c) : (a * b - c);
+        
+        // 生成四個選項
+        const options = [correctAnswer];
+        
+        // 生成干擾項
+        for (let j = 0; j < 3; j++) {
+            let wrongAnswer;
+            const errorType = Math.floor(Math.random() * 3);
+            
+            if (errorType === 0) {
+                wrongAnswer = isAddition ? (a * b - c) : (a * b + c); // 反向操作
+            } else if (errorType === 1) {
+                wrongAnswer = a * b; // 遺漏加/減
+            } else {
+                wrongAnswer = correctAnswer + (Math.floor(Math.random() * 10) - 5); // 隨機偏差
+            }
+            
+            if (!options.includes(wrongAnswer) && wrongAnswer > 0) {
+                options.push(wrongAnswer);
+            }
+        }
+        
+        // 確保有4個選項
+        while (options.length < 4) {
+            const random = Math.floor(Math.random() * 100) + 1;
+            if (!options.includes(random)) options.push(random);
+        }
+        
+        // 打亂選項順序
+        const shuffled = shuffleArray([...options]);
+        const correctIndex = shuffled.indexOf(correctAnswer);
+        
+        const operationSign = isAddition ? '+' : '-';
+        questions.push({
+            q: `${a} × ${b} ${operationSign} ${c} = ?`,
+            options: shuffled,
+            correct: correctIndex,
+            type: 'calc'
+        });
+    }
+    
+    return questions;
+}
+
+// ============ 比較題資料庫 (50題補充) ============
+const COMPARISON_POOL = [
     // == 分數 (1-13) ==
-    {q: "1/3 _ 1/2", a: "<"}, {q: "1/4 _ 1/5", a: ">"}, {q: "2/4 _ 1/2", a: "="}, {q: "3/7 _ 5/7", a: "<"},
-    {q: "6/6 _ 1", a: "="}, {q: "4/9 _ 2/9", a: ">"}, {q: "1/8 _ 1/6", a: "<"}, {q: "5/5 _ 8/8", a: "="},
-    {q: "3/5 _ 2/5", a: ">"}, {q: "7/10 _ 9/10", a: "<"}, {q: "1/10 _ 1/12", a: ">"}, {q: "4/4 _ 3/4", a: ">"}, {q: "2/6 _ 3/6", a: "<"},
+    {q: "1/3 _ 1/2", options: ["<", ">", "=", "無法比較"], correct: 0, type: 'comp'},
+    {q: "1/4 _ 1/5", options: ["<", ">", "=", "無法比較"], correct: 1, type: 'comp'},
+    {q: "2/4 _ 1/2", options: ["<", ">", "=", "無法比較"], correct: 2, type: 'comp'},
+    {q: "3/7 _ 5/7", options: ["<", ">", "=", "無法比較"], correct: 0, type: 'comp'},
+    {q: "6/6 _ 1", options: ["<", ">", "=", "無法比較"], correct: 2, type: 'comp'},
+    {q: "4/9 _ 2/9", options: ["<", ">", "=", "無法比較"], correct: 1, type: 'comp'},
+    {q: "1/8 _ 1/6", options: ["<", ">", "=", "無法比較"], correct: 0, type: 'comp'},
+    {q: "5/5 _ 8/8", options: ["<", ">", "=", "無法比較"], correct: 2, type: 'comp'},
+    {q: "3/5 _ 2/5", options: ["<", ">", "=", "無法比較"], correct: 1, type: 'comp'},
+    {q: "7/10 _ 9/10", options: ["<", ">", "=", "無法比較"], correct: 0, type: 'comp'},
+    {q: "1/10 _ 1/12", options: ["<", ">", "=", "無法比較"], correct: 1, type: 'comp'},
+    {q: "4/4 _ 3/4", options: ["<", ">", "=", "無法比較"], correct: 1, type: 'comp'},
+    {q: "2/6 _ 3/6", options: ["<", ">", "=", "無法比較"], correct: 0, type: 'comp'},
+    
     // == 重量 (14-25) ==
-    {q: "1 kg _ 900 g", a: ">"}, {q: "500 g _ 1/2 kg", a: "="}, {q: "2000 g _ 2 kg", a: "="}, {q: "3 kg _ 3500 g", a: "<"},
-    {q: "4050 g _ 4 kg", a: ">"}, {q: "6 kg _ 600 g", a: ">"}, {q: "1 kg 200 g _ 1200 g", a: "="}, {q: "800 g _ 1 kg", a: "<"},
-    {q: "7 kg _ 7000 g", a: "="}, {q: "2 kg 50 g _ 2500 g", a: "<"}, {q: "990 g _ 1 kg", a: "<"}, {q: "300 g + 700 g _ 1 kg", a: "="},
+    {q: "1 kg _ 900 g", options: ["<", ">", "=", "無法比較"], correct: 1, type: 'comp'},
+    {q: "500 g _ 1/2 kg", options: ["<", ">", "=", "無法比較"], correct: 2, type: 'comp'},
+    {q: "2000 g _ 2 kg", options: ["<", ">", "=", "無法比較"], correct: 2, type: 'comp'},
+    {q: "3 kg _ 3500 g", options: ["<", ">", "=", "無法比較"], correct: 0, type: 'comp'},
+    {q: "4050 g _ 4 kg", options: ["<", ">", "=", "無法比較"], correct: 1, type: 'comp'},
+    {q: "6 kg _ 600 g", options: ["<", ">", "=", "無法比較"], correct: 1, type: 'comp'},
+    {q: "1 kg 200 g _ 1200 g", options: ["<", ">", "=", "無法比較"], correct: 2, type: 'comp'},
+    {q: "800 g _ 1 kg", options: ["<", ">", "=", "無法比較"], correct: 0, type: 'comp'},
+    
     // == 容量 (26-38) ==
-    {q: "1 L _ 850 mL", a: ">"}, {q: "2000 mL _ 2 L", a: "="}, {q: "500 mL _ 1 L", a: "<"}, {q: "1 L 500 mL _ 1500 mL", a: "="},
-    {q: "3 L _ 3050 mL", a: "<"}, {q: "4 L _ 400 mL", a: ">"}, {q: "750 mL _ 75 L", a: "<"}, {q: "6000 mL _ 6 L", a: "="},
-    {q: "1 L 20 mL _ 1200 mL", a: "<"}, {q: "900 mL _ 1 L", a: "<"}, {q: "2 L 400 mL _ 2400 mL", a: "="}, {q: "5 L _ 4900 mL", a: ">"}, {q: "1500 mL _ 1 L", a: ">"},
+    {q: "1 L _ 850 mL", options: ["<", ">", "=", "無法比較"], correct: 1, type: 'comp'},
+    {q: "2000 mL _ 2 L", options: ["<", ">", "=", "無法比較"], correct: 2, type: 'comp'},
+    {q: "500 mL _ 1 L", options: ["<", ">", "=", "無法比較"], correct: 0, type: 'comp'},
+    {q: "1 L 500 mL _ 1500 mL", options: ["<", ">", "=", "無法比較"], correct: 2, type: 'comp'},
+    {q: "3 L _ 3050 mL", options: ["<", ">", "=", "無法比較"], correct: 0, type: 'comp'},
+    {q: "4 L _ 400 mL", options: ["<", ">", "=", "無法比較"], correct: 1, type: 'comp'},
+    {q: "750 mL _ 75 L", options: ["<", ">", "=", "無法比較"], correct: 0, type: 'comp'},
+    {q: "6000 mL _ 6 L", options: ["<", ">", "=", "無法比較"], correct: 2, type: 'comp'},
+    {q: "1 L 20 mL _ 1200 mL", options: ["<", ">", "=", "無法比較"], correct: 0, type: 'comp'},
+    {q: "900 mL _ 1 L", options: ["<", ">", "=", "無法比較"], correct: 0, type: 'comp'},
+    {q: "2 L 400 mL _ 2400 mL", options: ["<", ">", "=", "無法比較"], correct: 2, type: 'comp'},
+    {q: "5 L _ 4900 mL", options: ["<", ">", "=", "無法比較"], correct: 1, type: 'comp'},
+    
     // == 長度 (39-50) ==
-    {q: "1 m _ 99 cm", a: ">"}, {q: "200 cm _ 2 m", a: "="}, {q: "3 m _ 350 cm", a: "<"}, {q: "4 m 5 cm _ 450 cm", a: "<"},
-    {q: "600 cm _ 6 m", a: "="}, {q: "8 m _ 80 cm", a: ">"}, {q: "1 m 20 cm _ 120 cm", a: "="}, {q: "50 cm _ 5 m", a: "<"},
-    {q: "7 m 80 cm _ 708 cm", a: ">"}, {q: "900 cm _ 9 m", a: "="}, {q: "150 cm _ 1 m", a: ">"}, {q: "3 m 40 cm _ 340 cm", a: "="}
+    {q: "1 m _ 99 cm", options: ["<", ">", "=", "無法比較"], correct: 1, type: 'comp'},
+    {q: "200 cm _ 2 m", options: ["<", ">", "=", "無法比較"], correct: 2, type: 'comp'},
+    {q: "3 m _ 350 cm", options: ["<", ">", "=", "無法比較"], correct: 0, type: 'comp'},
+    {q: "4 m 5 cm _ 450 cm", options: ["<", ">", "=", "無法比較"], correct: 0, type: 'comp'},
+    {q: "600 cm _ 6 m", options: ["<", ">", "=", "無法比較"], correct: 2, type: 'comp'},
+    {q: "8 m _ 80 cm", options: ["<", ">", "=", "無法比較"], correct: 1, type: 'comp'},
+    {q: "1 m 20 cm _ 120 cm", options: ["<", ">", "=", "無法比較"], correct: 2, type: 'comp'},
+    {q: "50 cm _ 5 m", options: ["<", ">", "=", "無法比較"], correct: 0, type: 'comp'},
+    {q: "7 m 80 cm _ 708 cm", options: ["<", ">", "=", "無法比較"], correct: 1, type: 'comp'},
+    {q: "900 cm _ 9 m", options: ["<", ">", "=", "無法比較"], correct: 2, type: 'comp'},
+    {q: "150 cm _ 1 m", options: ["<", ">", "=", "無法比較"], correct: 1, type: 'comp'},
+    {q: "3 m 40 cm _ 340 cm", options: ["<", ">", "=", "無法比較"], correct: 2, type: 'comp'}
 ];
 
 // ============ 怪獸模板 ============
@@ -56,7 +149,8 @@ let gameState = {
     timeLeft: GAME_CONFIG.GAME_DURATION,
     p1: {},
     p2: {},
-    itemPoolCopy: [...ITEM_POOL]
+    questionPool: [], // 混合題目池
+    questionTypePool: [] // 題目類型池
 };
 
 // ============ 初始化玩家 ============
@@ -71,7 +165,7 @@ function initPlayer(id) {
         correctCount: 0,
         currentJob: JOB_TEMPLATES[jobType][0],
         jobType: jobType,
-        selectedOp: "",
+        selectedAnswer: -1,
         currentQuizIndex: 0,
         monsterHp: GAME_CONFIG.MONSTER_HP,
         monsterName: "",
@@ -81,10 +175,6 @@ function initPlayer(id) {
 }
 
 // ============ 畫面導航 ============
-/**
- * 顯示指定的遊戲畫面
- * @param {string} screenId - 要顯示的畫面ID
- */
 function showScreen(screenId) {
     document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
     document.getElementById(screenId).classList.add('active');
@@ -93,18 +183,12 @@ function showScreen(screenId) {
     timerElement.style.display = screenId === 'screen-game' ? 'block' : 'none';
 }
 
-/**
- * 返回主菜單
- */
 function goHome() {
     clearInterval(gameState.timerInterval);
     showScreen('screen-start');
 }
 
 // ============ 全屏控制 ============
-/**
- * 切換全屏模式
- */
 function toggleFullscreen() {
     const btn = document.getElementById('btn-fullscreen');
     
@@ -120,21 +204,23 @@ function toggleFullscreen() {
 }
 
 // ============ 遊戲流程控制 ============
-/**
- * 開始新遊戲
- */
 function startGame() {
     gameState.p1 = initPlayer(1);
     gameState.p2 = initPlayer(2);
     gameState.timeLeft = GAME_CONFIG.GAME_DURATION;
-    gameState.itemPoolCopy = [...ITEM_POOL];
+    
+    // 建立混合題目池 (100計算題 + 50比較題)
+    gameState.questionPool = [
+        ...CALCULATION_POOL.map((q, i) => ({ ...q, poolIndex: i, isCalc: true })),
+        ...COMPARISON_POOL.map((q, i) => ({ ...q, poolIndex: i, isCalc: false }))
+    ];
     
     // 洗牌題目陣列
-    shuffleArray(gameState.itemPoolCopy);
+    shuffleArray(gameState.questionPool);
     
     // 設定起始題目索引
     gameState.p1.currentQuizIndex = 0;
-    gameState.p2.currentQuizIndex = Math.floor(gameState.itemPoolCopy.length / 2);
+    gameState.p2.currentQuizIndex = Math.floor(gameState.questionPool.length / 2);
     
     spawnMonster(1);
     spawnMonster(2);
@@ -149,9 +235,6 @@ function startGame() {
     startTimer();
 }
 
-/**
- * 啟動倒數計時器
- */
 function startTimer() {
     clearInterval(gameState.timerInterval);
     updateTimerDisplay();
@@ -166,9 +249,6 @@ function startTimer() {
     }, 1000);
 }
 
-/**
- * 更新計時器顯示
- */
 function updateTimerDisplay() {
     const min = Math.floor(gameState.timeLeft / 60);
     const sec = gameState.timeLeft % 60;
@@ -177,10 +257,6 @@ function updateTimerDisplay() {
 }
 
 // ============ 怪獸生成 ============
-/**
- * 為玩家生成新的怪獸
- * @param {number} pId - 玩家ID (1或2)
- */
 function spawnMonster(pId) {
     const p = pId === 1 ? gameState.p1 : gameState.p2;
     const monsterTemplate = MONSTER_TEMPLATES[Math.floor(Math.random() * MONSTER_TEMPLATES.length)];
@@ -194,73 +270,67 @@ function spawnMonster(pId) {
 }
 
 // ============ 題目渲染 ============
-/**
- * 渲染題目到UI
- * @param {number} pId - 玩家ID
- */
 function renderQuiz(pId) {
     const p = pId === 1 ? gameState.p1 : gameState.p2;
-    const item = gameState.itemPoolCopy[p.currentQuizIndex % gameState.itemPoolCopy.length];
+    const item = gameState.questionPool[p.currentQuizIndex % gameState.questionPool.length];
     
-    const parts = item.q.split('_');
-    const quizHtml = `${parts[0]} <span class="slot" id="p${pId}-slot">_</span> ${parts[1]}`;
-    document.getElementById(`p${pId}-quiz`).innerHTML = quizHtml;
+    // 清除選擇
+    p.selectedAnswer = -1;
     
-    p.selectedOp = "";
-    updateOperatorDisplay(pId);
+    // 更新題目
+    document.getElementById(`p${pId}-quiz`).innerText = item.q;
+    
+    // 更新答案選項
+    const optionsContainer = document.getElementById(`p${pId}-options`);
+    const buttons = optionsContainer.querySelectorAll('.ans-btn');
+    
+    buttons.forEach((btn, idx) => {
+        btn.innerText = String.fromCharCode(65 + idx); // A, B, C, D
+        btn.classList.remove('selected');
+        btn.disabled = false;
+    });
+    
+    p.currentQuestion = item;
 }
 
-// ============ 運算符輸入 ============
-/**
- * 玩家輸入運算符
- * @param {number} pId - 玩家ID
- * @param {string} op - 運算符 ('>', '<', '=')
- */
-function inputOp(pId, op) {
+// ============ 答案選擇 ============
+function selectAnswer(pId, optionIndex) {
     const p = pId === 1 ? gameState.p1 : gameState.p2;
-    p.selectedOp = op;
-    updateOperatorDisplay(pId);
+    p.selectedAnswer = optionIndex;
+    
+    // 更新UI - 標示選中的選項
+    const optionsContainer = document.getElementById(`p${pId}-options`);
+    const buttons = optionsContainer.querySelectorAll('.ans-btn');
+    buttons.forEach((btn, idx) => {
+        if (idx === optionIndex) {
+            btn.classList.add('selected');
+        } else {
+            btn.classList.remove('selected');
+        }
+    });
 }
 
-/**
- * 清除輸入
- * @param {number} pId - 玩家ID
- */
-function clearOp(pId) {
+function clearAnswer(pId) {
     const p = pId === 1 ? gameState.p1 : gameState.p2;
-    p.selectedOp = "";
-    updateOperatorDisplay(pId);
-}
-
-/**
- * 更新運算符顯示
- * @param {number} pId - 玩家ID
- */
-function updateOperatorDisplay(pId) {
-    const p = pId === 1 ? gameState.p1 : gameState.p2;
-    const slotElement = document.getElementById(`p${pId}-slot`);
-    slotElement.innerText = p.selectedOp || "_";
+    p.selectedAnswer = -1;
+    
+    const optionsContainer = document.getElementById(`p${pId}-options`);
+    const buttons = optionsContainer.querySelectorAll('.ans-btn');
+    buttons.forEach(btn => btn.classList.remove('selected'));
 }
 
 // ============ 答案檢查 ============
-/**
- * 檢查玩家答案
- * @param {number} pId - 玩家ID
- */
 function checkAnswer(pId) {
     const p = pId === 1 ? gameState.p1 : gameState.p2;
     
-    // 如果未輸入答案
-    if (!p.selectedOp) {
+    if (p.selectedAnswer === -1) {
         alert("請先選擇答案！");
         return;
     }
     
-    // 獲取當前題目
-    const item = gameState.itemPoolCopy[p.currentQuizIndex % gameState.itemPoolCopy.length];
-    const isCorrect = p.selectedOp === item.a;
+    const item = gameState.questionPool[p.currentQuizIndex % gameState.questionPool.length];
+    const isCorrect = p.selectedAnswer === item.correct;
     
-    // 處理正確/錯誤
     if (isCorrect) {
         handleCorrectAnswer(pId);
     } else {
@@ -273,59 +343,41 @@ function checkAnswer(pId) {
     updateUI(pId);
 }
 
-/**
- * 處理正確答案
- * @param {number} pId - 玩家ID
- */
 function handleCorrectAnswer(pId) {
     const p = pId === 1 ? gameState.p1 : gameState.p2;
     
     p.correctCount++;
     p.combo++;
-    p.score += 10 + (p.combo > 0 ? p.combo * 2 : 0); // 基分+Combo加成
+    p.score += 10 + (p.combo > 0 ? p.combo * 2 : 0);
     
     if (p.combo > p.maxCombo) p.maxCombo = p.combo;
     
-    // 攻擊怪獸
     p.monsterHp -= GAME_CONFIG.CORRECT_DAMAGE;
     
-    // 顯示動效
     showHitEffect(pId);
     
-    // 檢查怪獸是否被擊敗
     if (p.monsterHp <= 0) {
         p.kills++;
         spawnMonster(pId);
-        p.combo = 0; // 重置 combo
+        p.combo = 0;
     }
     
-    // 檢查職業升級
     checkJobUpgrade(pId);
 }
 
-/**
- * 處理錯誤答案
- * @param {number} pId - 玩家ID
- */
 function handleWrongAnswer(pId) {
     const p = pId === 1 ? gameState.p1 : gameState.p2;
     
-    p.combo = 0; // 重置 combo
+    p.combo = 0;
     p.hp -= GAME_CONFIG.WRONG_DAMAGE;
     
-    // 顯示被攻擊效果
     showDamageEffect(pId);
     
-    // 檢查遊戲是否結束（HP <= 0）
     if (p.hp <= 0) {
         p.hp = 0;
     }
 }
 
-/**
- * 檢查職業升級
- * @param {number} pId - 玩家ID
- */
 function checkJobUpgrade(pId) {
     const p = pId === 1 ? gameState.p1 : gameState.p2;
     const jobList = JOB_TEMPLATES[p.jobType];
@@ -339,20 +391,12 @@ function checkJobUpgrade(pId) {
 }
 
 // ============ 動效反饋 ============
-/**
- * 顯示命中動效
- * @param {number} pId - 玩家ID
- */
 function showHitEffect(pId) {
     const stage = document.getElementById(`p${pId}-stage`);
     stage.classList.add('heal');
     setTimeout(() => stage.classList.remove('heal'), 400);
 }
 
-/**
- * 顯示被傷害動效
- * @param {number} pId - 玩家ID
- */
 function showDamageEffect(pId) {
     const stage = document.getElementById(`p${pId}-stage`);
     stage.classList.add('hit');
@@ -360,28 +404,19 @@ function showDamageEffect(pId) {
 }
 
 // ============ UI 更新 ============
-/**
- * 更新玩家UI
- * @param {number} pId - 玩家ID
- */
 function updateUI(pId) {
     const p = pId === 1 ? gameState.p1 : gameState.p2;
     
-    // 更新 HP 條
     const hpPercentage = Math.max(0, (p.hp / GAME_CONFIG.INITIAL_HP) * 100);
     document.getElementById(`p${pId}-hp`).style.width = hpPercentage + '%';
     
-    // 更新分數
     document.getElementById(`p${pId}-score`).innerText = p.score;
     
-    // 更新怪獸 HP 條
     const monsterHpPercentage = Math.max(0, (p.monsterHp / GAME_CONFIG.MONSTER_HP) * 100);
     document.getElementById(`p${pId}-m-hp`).style.width = monsterHpPercentage + '%';
     
-    // 更新擊敗數
     document.getElementById(`p${pId}-kills`).innerText = p.kills;
     
-    // 更新 Combo 顯示
     const comboBadge = document.getElementById(`p${pId}-combo`);
     if (p.combo >= GAME_CONFIG.COMBO_THRESHOLD) {
         comboBadge.innerText = `${p.combo} Combo`;
@@ -392,16 +427,12 @@ function updateUI(pId) {
 }
 
 // ============ 遊戲結束 ============
-/**
- * 結束遊戲並顯示結果
- */
 function endGame() {
     clearInterval(gameState.timerInterval);
     
     const p1 = gameState.p1;
     const p2 = gameState.p2;
     
-    // 確定勝者
     let winnerText = "";
     let winnerCard = null;
     
@@ -415,7 +446,6 @@ function endGame() {
         winnerText = "🤝 平手！ 🤝";
     }
     
-    // 更新結果卡
     updateResultCard('p1', p1);
     updateResultCard('p2', p2);
     
@@ -428,11 +458,6 @@ function endGame() {
     showScreen('screen-result');
 }
 
-/**
- * 更新結果卡的內容
- * @param {string} pPrefix - 玩家前綴 ('p1' 或 'p2')
- * @param {object} p - 玩家對象
- */
 function updateResultCard(pPrefix, p) {
     document.getElementById(`${pPrefix}-res-kills`).innerText = p.kills;
     document.getElementById(`${pPrefix}-res-job`).innerText = p.currentJob;
@@ -440,13 +465,10 @@ function updateResultCard(pPrefix, p) {
 }
 
 // ============ 工具函數 ============
-/**
- * Fisher-Yates 洗牌算法
- * @param {array} array - 要洗牌的陣列
- */
 function shuffleArray(array) {
     for (let i = array.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
         [array[i], array[j]] = [array[j], array[i]];
     }
+    return array;
 }

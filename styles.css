@@ -79,6 +79,8 @@ body, html {
     line-height: 1.8;
     margin-bottom: 30px;
     border: 2px solid #f1c40f;
+    overflow-y: auto;
+    max-height: 60vh;
 }
 
 /* ============ 頂部工具列 ============ */
@@ -127,6 +129,7 @@ body, html {
     padding: 15px;
     position: relative;
     transition: all 0.3s;
+    overflow-y: auto;
 }
 
 #p1-side {
@@ -209,86 +212,88 @@ body, html {
     background: #fff;
     color: #333;
     border-radius: 15px;
-    padding: 25px;
+    padding: 20px;
     text-align: center;
     box-shadow: inset 0 0 10px rgba(0,0,0,0.2);
     flex-grow: 1;
     display: flex;
     flex-direction: column;
     justify-content: center;
+    min-height: 80px;
 }
 
 .quiz-text {
-    font-size: 38px;
+    font-size: 32px;
     font-weight: bold;
     letter-spacing: 2px;
-    margin-bottom: 20px;
+    margin-bottom: 15px;
 }
 
-.slot {
-    display: inline-block;
-    width: 70px;
-    height: 60px;
-    border-bottom: 5px solid #34495e;
-    margin: 0 15px;
-    vertical-align: middle;
-    text-align: center;
-    line-height: 50px;
-    font-size: 45px;
-    color: #e74c3c;
-    font-weight: bold;
-}
-
-/* ============ 運算符與控制按鍵 ============ */
-.keypad {
+/* ============ 答案選項 ============ */
+.answer-options {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(2, 1fr);
     gap: 10px;
-    margin-top: 15px;
+    margin: 10px 0;
 }
 
-.op-btn {
+.ans-btn {
     padding: 15px;
-    font-size: 32px;
+    font-size: 18px;
     font-weight: bold;
     background: #ecf0f1;
     color: #2c3e50;
-    border: none;
+    border: 3px solid transparent;
     border-radius: 10px;
-    box-shadow: 0 4px #bdc3c7;
     cursor: pointer;
+    box-shadow: 0 4px #bdc3c7;
+    transition: all 0.2s ease;
 }
 
-.op-btn:active {
+.ans-btn:active {
     transform: translateY(2px);
     box-shadow: 0 2px #bdc3c7;
 }
 
+.ans-btn.selected {
+    background: #3498db;
+    color: white;
+    border: 3px solid #2980b9;
+    box-shadow: 0 0 15px rgba(52, 152, 219, 0.5);
+}
+
+/* ============ 控制按鈕組 ============ */
+.button-group {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+}
+
 .ctrl-btn {
-    grid-column: span 1;
-    padding: 15px;
-    font-size: 20px;
+    padding: 12px 25px;
+    font-size: 18px;
     font-weight: bold;
     color: white;
     border: none;
     border-radius: 10px;
     cursor: pointer;
+    box-shadow: 0 4px #000;
+    transition: all 0.2s ease;
 }
 
 .btn-clear {
     background: #e67e22;
     box-shadow: 0 4px #d35400;
+    flex: 1;
 }
 
 .btn-confirm {
-    grid-column: span 2;
     background: #2ecc71;
     box-shadow: 0 4px #27ae60;
-    font-size: 24px;
+    flex: 1;
 }
 
-.btn-clear:active,
-.btn-confirm:active {
+.ctrl-btn:active {
     transform: translateY(2px);
     box-shadow: 0 2px;
 }
@@ -336,4 +341,24 @@ body, html {
 @keyframes flash-green {
     0%, 100% { background-color: rgba(0,255,0,0); }
     50% { background-color: rgba(0,255,0,0.4); }
+}
+
+/* ============ 響應式設計 ============ */
+@media (max-width: 768px) {
+    .game-container {
+        flex-direction: column;
+    }
+    
+    #p1-side {
+        border-right: none;
+        border-bottom: 4px solid #fff;
+    }
+    
+    .title-text {
+        font-size: 36px;
+    }
+    
+    .rule-box {
+        font-size: 16px;
+    }
 }
